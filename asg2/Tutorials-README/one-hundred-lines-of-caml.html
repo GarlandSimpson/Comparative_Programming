@@ -1,0 +1,282 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"
+ "http://www.w3.org/TR/REC-html40/loose.dtd">
+<HTML>
+<HEAD>
+<TITLE>Frequently asked Questions about Caml</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="#FFFFFF">
+
+<H1 ALIGN=CENTER><A name="Début">One hundred lines of Caml</A></H1>
+
+<ADDRESS>Contact the author <A HREF="mailto:Pierre.Weis@inria.fr">Pierre.Weis@inria.fr</A></ADDRESS>
+<BR>
+Created in January 1996.
+
+<H2 ALIGN=LEFT>Elementary functions</H2>
+
+<P>Using the interactive system, I define the square function, and the
+recursive factorial function. Then I try my new functions with some examples:
+<PRE>
+&gt;       Caml Light version 0.74
+
+#let square (x) = x * x;;
+square : int -&gt; int = &lt;fun&gt;
+#let rec fact (x) =
+  if x &lt;= 1 then 1 else x * fact (x - 1);;
+fact : int -&gt; int = &lt;fun&gt;
+#fact (5);;
+- : int = 120
+#square (120);;
+- : int = 14400
+</PRE>
+
+<H2 ALIGN=LEFT>Automatic memory management</H2>
+
+<P>All allocation and deallocation operations are fully automatic.
+I give the example of lists.
+
+<P>Lists are predefined in Caml, the empty
+list is <CODE>[]</CODE>, and the list constructor is denoted by
+<CODE>::</CODE> (binary and infix).
+<PRE>
+#let l = 1 :: 2 :: 3 :: [];;
+l : int list = [1; 2; 3]
+#[1; 2; 3];;
+- : int list = [1; 2; 3]
+#5 :: l;;
+- : int list = [5; 1; 2; 3]
+</PRE>
+
+<H2 ALIGN=LEFT>Polymorphism: sorting lists</H2>
+
+<P>Insertion sort is defined with two recursive routines, using pattern
+matching on lists.
+<PRE>
+#let rec sort = function
+  | [] -&gt; []
+  | x :: l -&gt; insert x (sort l)
+
+and insert elem = function
+ | [] -&gt; [elem]
+ | x :: l -&gt; if elem &lt; x then elem :: x :: l else x :: insert elem l;;
+sort : 'a list -&gt; 'a list = &lt;fun&gt;
+insert : 'a -&gt; 'a list -&gt; 'a list = &lt;fun&gt;
+#sort [2; 1; 0];;
+- : int list = [0; 1; 2]
+#sort ["yes"; "ok"; "sure"; "ya"; "yep"];;
+- : string list = ["ok"; "sure"; "ya"; "yep"; "yes"]
+</PRE>
+
+<H2 ALIGN=LEFT>Imperative features</H2>
+
+<P>Polynoms being represented as arrays, I add two polynoms by first
+creating the resulting polynom, and then filling its slots with two
+``for'' loops.
+
+<PRE>
+#let add_polynom p1 p2 =
+ let result = make_vect (max (vect_length p1) (vect_length p2)) 0 in
+ for i = 0 to vect_length p1 - 1 do result.(i) &lt;- p1.(i) done;
+ for i = 0 to vect_length p2 - 1 do result.(i) &lt;- result.(i) + p2.(i) done;
+ result;;
+add_polynom : int vect -&gt; int vect -&gt; unit
+#add_polynom [| 1; 2 |] [| 1; 2 |];;
+- : int vect = [|2; 4|]
+</PRE>
+
+<P>Accumulators are defined in Caml using updatable cells, named
+references.
+
+<P>
+<CODE>ref init</CODE> returns a new cell with initial contents 
+<CODE>init</CODE>,<BR>
+<CODE>!cell</CODE> returns the actual contents of <CODE>cell</CODE>, and <BR>
+<CODE>cell := val</CODE> updates <CODE>cell</CODE> with the value
+<CODE>val</CODE>. </P>
+
+<P>I define <CODE>fact</CODE> with an accumulator and a ``for'' loop:
+<PRE>
+#let fact n =
+ let result = ref 1 in
+ for i = 1 to n do
+  result := i * !result
+ done;
+ !result;;
+fact : int -&gt; int = &lt;fun&gt;
+#fact 5;;
+- : int = 120
+</PRE>
+
+<H2 ALIGN=LEFT>Functionality</H2>
+
+<P>No restrictions on functions, that may be higher-order. I define the
+sigma function that returns the sum of results of applying a given
+function <CODE>f</CODE> to each element of list:
+<PRE>
+#let rec sigma f = function
+ | [] -&gt; 0
+ | x :: l -&gt; f x + sigma f l;;
+sigma : ('a -&gt; int) -&gt; 'a list -&gt; int = &lt;fun&gt;
+</PRE>
+
+<P>Temporary functions may be defined as no-name functional values with the
+``function'' construct:
+<PRE>
+#sigma (function x -&gt; x * x) [1; 2; 3];;
+- : int = 14
+</PRE>
+
+<P>Combined with polymorphism, higher-order functionality allows the
+definition of the functional composition of two functions. 
+<PRE>
+#let compose f g = function x -&gt; f (g (x));;
+compose : ('a -&gt; 'b) -&gt; ('c -&gt; 'a) -&gt; 'c -&gt; 'b = &lt;fun&gt;
+#let square_o_fact = compose square fact;;
+square_o_fact : int -&gt; int = &lt;fun&gt;
+#square_o_fact 5;;
+- : int = 14400
+</PRE>
+
+<H2 ALIGN=LEFT>Symbolic computation</H2>
+
+<P>I consider simple symbolic expressions with integers, variables, let
+bindings, and binary operators. These symbolic expressions are defined
+as a new data type, using a type definition:
+<PRE>
+#type expression =
+ | Num of int
+ | Var of string
+ | Let of string * expression * expression
+ | Binop of string * expression * expression;;
+Type expression defined.
+</PRE>
+
+<P>Symbolic evaluation of these expressions involves an environment
+which is just a list of pairs (identifier, value).
+<PRE>
+#let rec eval env = function
+  | Num i -&gt; i
+  | Var x -&gt; assoc x env
+  | Let (x, e1, in_e2) -&gt;
+     let val_x = eval env e1 in
+     eval ((x, val_x) :: env) in_e2
+  | Binop (op, e1, e2) -&gt;
+     let v1 = eval env e1 in
+     let v2 = eval env e2 in
+     eval_op op v1 v2
+
+and eval_op op v1 v2 =
+ match op with
+ | "+" -&gt; v1 + v2
+ | "-" -&gt; v1 - v2
+ | "*" -&gt; v1 * v2
+ | "/" -&gt; v1 / v2
+ | _ -&gt; failwith ("Unknown operator: " ^ op);;
+eval : (string * int) list -&gt; expression -&gt; int = &lt;fun&gt;
+eval_op : string -&gt; int -&gt; int -&gt; int = &lt;fun&gt;
+</PRE>
+
+<P>As an example, we evaluate the phrase ``let x = 1 in x + x'':
+<PRE>
+#eval [] (Let ("x", Num 1, Binop ("+", Var "x", Var "x")));;
+- : int = 2
+</PRE>
+
+<P>In addition to data type definition, the pattern matching facility
+leads to an easy way of defining functions on symbolic data. For
+instance, from the type definition of expressions:
+<PRE>
+type expression =
+ | Num of int
+ | Var of string
+ | Let of string * expression * expression
+ | Binop of string * expression * expression
+</PRE>
+<P>we get the skeleton of the printing procedure for expression:
+<PRE>
+let print_expression = function
+ | Num int -&gt;
+ | Var string -&gt;
+ | Let (string, expression1, expression2) -&gt;
+ | Binop (string, expression1, expression2) -&gt;
+</PRE>
+
+<P>We just have to complete the pattern matching clauses to get the
+printing routine:
+<PRE>
+#let rec print_expression = function
+ | Num int -&gt; print_int int
+ | Var string -&gt; print_string string
+ | Let (string, expression1, expression2) -&gt;
+    print_string "let "; print_string string; print_string " = ";
+    print_expression expression1; print_string " in ";
+    print_expression expression2
+ | Binop (string, expression1, expression2) -&gt;
+    print_string "("; print_expression expression1;
+    print_string (" "^string^" ");
+    print_expression expression2; print_string ")";;
+print_expression : expression -&gt; unit = &lt;fun&gt;
+#print_expression (Let ("x", Num 1, Binop ("+", Var "x", Var "x")));;
+let x = 1 in (x + x)- : unit = ()
+</PRE>
+
+<H2 ALIGN=LEFT>Parsing data</H2>
+
+<P>Caml offers a rich panel of parsing tools: it includes traditional lex
+and yacc interfaces, but also an original stream primitive data type,
+with its associated ``functional parsing'' technology.
+
+<P>Writing a parser is always a bit technical, you may like to omit it.
+However, you can find a <A HREF="exemple_stream-eng.html">parser</A>
+for the above <CODE>expression</CODE> data type.
+
+
+<H2 ALIGN=LEFT>Elementary debugging</H2>
+
+<P>Just for completeness, let me show you the simplest way to debug
+programs, using the trace facility:
+<PRE>
+#let rec fib x = if x &lt;= 1 then 1 else fib (x - 1) + fib (x - 2);;
+fib : int -&gt; int = &lt;fun&gt;
+#trace "fib";;
+The function fib is now traced.
+- : unit = ()
+#fib 3;;
+fib &lt;-- 3
+fib &lt;-- 1
+fib --&gt; 1
+fib &lt;-- 2
+fib &lt;-- 0
+fib --&gt; 1
+fib &lt;-- 1
+fib --&gt; 1
+fib --&gt; 2
+fib --&gt; 3
+- : int = 3
+</PRE>
+
+<H2 ALIGN=LEFT>More</H2>
+
+<P>If you know the lambda calculus, <A
+HREF="format-eng.html#example_format">click here</A> to see a more
+significative example of symbolic data manipulation using Caml: the
+definition of lambda-terms with their associated lexical analyzer,
+parser and printer, within about fifty lines of Caml code.
+
+<P>
+<HR>
+<A HREF="../index-eng.html">Caml home page</A>
+<!--#config timefmt="%A, %B %e, %Y" -->
+   <EM>Last modified: </EM>
+Friday, September 15, 2000<BR>
+<A HREF="copyright-eng.html">Copyright</A> &#169; 1995, 1996, 1997,
+1998, 1999, 2000, 2001, 2002,
+INRIA all rights reserved.
+
+<P>
+<ADDRESS>Contact the author <A HREF="mailto:Pierre.Weis@inria.fr">Pierre.Weis@inria.fr</A></ADDRESS>
+<HR>
+
+</BODY>
+</HTML>

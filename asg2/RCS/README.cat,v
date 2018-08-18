@@ -1,0 +1,82 @@
+head	1.2;
+access;
+symbols;
+locks;
+comment	@# @;
+
+
+1.2
+date	2018.01.25.00.45.23;	author -;	state -;
+branches;
+next	1.1;
+
+1.1
+date	2015.10.06.21.39.33;	author -;	state -;
+branches;
+next	;
+
+
+desc
+@@
+
+
+1.2
+log
+@-
+@
+text
+@OCaml references and tutorials:
+
+Ocaml Language information.
+http://www2.ucsc.edu/courses/cmps112-wm/:/Languages/ocaml/
+
+The OCaml system release 4.02: Documentation and user's manual
+http://caml.inria.fr/pub/docs/manual-ocaml/
+This is where you should look up specific modules and functions
+available in the language.
+
+A Hundred Lines of Caml
+http://caml.inria.fr/about/taste.en.html
+Very brief introduction from the first OCaml lecture.
+
+Ocaml Cheat Sheets
+https://ocaml.org/docs/cheat_sheets.html
+Very brief summaries of Language, Tools, and Library.
+
+An Introduction to Objective Caml
+http://www.cs.columbia.edu/~sedwards/classes/2012/w4115-spring/ocaml.pdf
+PDF slides.
+
+Think Ocaml: How to Think Like a (Functional) Programmer
+http://greenteapress.com/thinkocaml/
+An introductory programming text based ont he Ocaml language.
+
+Real World OCaml
+https://realworldocaml.org/v1/en/html/index.html
+An introductory book about OCaml.
+Read it online for free or buy the book from O'Reilly.
+
+Developing Applications With Objective Caml
+http://caml.inria.fr/pub/docs/oreilly-book/
+Another book which you can read as HTML or download as a PDF.
+Chapters 2, 3, 4 are most relevant.
+
+Introduction to Objective Caml
+http://www.cs.columbia.edu/~sedwards/classes/2012/w4115-spring/ocaml.pdf
+Slide presentation.
+
+$Id: README.cat,v 1.1 2015-10-06 14:39:33-07 - - $
+@
+
+
+1.1
+log
+@-
+@
+text
+@d3 3
+d15 12
+d41 1
+a41 1
+$Id: README.cat,v 1.6 2014-11-20 15:45:41-08 - - $
+@
