@@ -1,5 +1,5 @@
 # Comparative_Programming
-Lab Submissions from Comparative Programming course @ UCSC
+Lab Submissions from Comparative Programming course @ UCSC - Winter 2018
 <ul>
 <li> asg1 = Scheme </li>
 <li> asg2 = Ocaml </li>
