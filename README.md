@@ -22,12 +22,5 @@ Smalltalk for those who can type [http://smalltalk.gnu.org/].
   You will use Prolog to write an airline reservation system for the Twilight Zone Airlines.
 Given a request to travel from one city to another, print out the flight
 schedule. For each leg of the trip, print out the departure airport, airport, city
-name, and time. For example :
-<p>
-| ?- fly( lax, sea).
-depart LAX Los Angeles    14:22
-arrive SFO San Francisco  15:29
-depart SFO San Francisco  16:02
-arrive SEA Seattle-Tacoma 17:42
-  </p>
+name, and time.
 </ul>
